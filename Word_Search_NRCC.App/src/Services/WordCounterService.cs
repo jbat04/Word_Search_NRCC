@@ -31,17 +31,23 @@ public class WordCounterService : IWordCounter
         //Improves processing of many files
         Parallel.ForEach(filePaths, parallelOptions, filePath =>
         {
-            //As Parallel optimizes for large files
-            foreach (var line in _fileReader.ReadLines(filePath)
-                                .AsParallel()
-                                .WithDegreeOfParallelism(parallelOptions.MaxDegreeOfParallelism))
+            try
             {
-                var words = Regex.Split(line, @"\W+");
-                foreach (string word in words)
+                //As Parallel optimizes for large files
+                foreach (var line in _fileReader.ReadLines(filePath)
+                                    .AsParallel()
+                                    .WithDegreeOfParallelism(parallelOptions.MaxDegreeOfParallelism))
                 {
-                    if(String.IsNullOrWhiteSpace(word)) continue;
-                    wordCounts.AddOrUpdate(word, 1, (_, count) => count + 1);
+                    var words = Regex.Split(line, @"\W+");
+                    foreach (string word in words)
+                    {
+                        if (String.IsNullOrWhiteSpace(word)) continue;
+                        wordCounts.AddOrUpdate(word, 1, (_, count) => count + 1);
+                    }
                 }
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"Error on file {filePath}: {ex.Message}");
             }
         });
 
