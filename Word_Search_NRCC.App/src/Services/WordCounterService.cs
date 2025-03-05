@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Word_Search_NRCC.src.Interfaces;
 
@@ -35,9 +36,10 @@ public class WordCounterService : IWordCounter
                                 .AsParallel()
                                 .WithDegreeOfParallelism(parallelOptions.MaxDegreeOfParallelism))
             {
-                var words = line?.Split(" ", StringSplitOptions.RemoveEmptyEntries) ?? null;
+                var words = Regex.Split(line, @"\W+");
                 foreach (string word in words)
                 {
+                    if(String.IsNullOrWhiteSpace(word)) continue;
                     wordCounts.AddOrUpdate(word, 1, (_, count) => count + 1);
                 }
             }
